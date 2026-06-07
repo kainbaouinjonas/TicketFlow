@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-xl">
+        <div class="text-center mb-8">
+            <div class="bg-gradient-to-br from-brand-500 to-indigo-500 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+            </div>
+            <h1 class="text-2xl font-bold font-outfit" x-text="t('login') || 'Connexion'">Connexion</h1>
+            <p class="text-xs text-slate-400 mt-1 font-light" x-text="t('access_ticketflow') || 'Accédez à votre espace TicketFlow.'">Accédez à votre espace TicketFlow.</p>
+        </div>
+
+        <!-- Language Selector on Login Page -->
+        <div class="flex justify-center mb-6">
+            <select x-model="lang" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold px-3 py-2 rounded-xl focus:outline-none text-slate-600 dark:text-slate-400">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="pt">🇧🇷 Português</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="zh">🇨🇳 中文</option>
+            </select>
+        </div>
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">
+                        <span x-text="t('username')">Nom d'utilisateur</span>
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400">
+                            <span x-text="t('password')">Mot de passe</span>
+                        </label>
+                        <a href="{% url 'password_reset' %}" class="text-[10px] text-brand-600 hover:text-brand-700 font-semibold">
+                            <span x-text="t('forgot_password')">Oublié ?</span>
+                        </a>
+                    </div>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-brand-500/20 mt-6 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                <span x-text="t('login') || 'Se connecter'">Se connecter</span>
+            </button>
+        </form>
+
+        <div class="text-center text-xs text-slate-500 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <span x-text="t('new_here') || 'Nouveau ?'">Nouveau ?</span>
+            <a href="{% url 'register' %}" class="font-bold text-brand-600 hover:text-brand-700 ml-1" x-text="t('register') || 'Créer un compte'">Créer un compte</a>
+        </div>
+
+        <!-- Admin portal hint -->
+        <div class="text-center mt-4">
+            <p class="text-[10px] text-slate-400 font-light">
+                Portail administration : <a href="/admin/" class="text-brand-500 hover:underline font-semibold">/admin/</a>
+                &nbsp;|&nbsp; Scanner : <a href="{% url 'scanner' %}" class="text-emerald-500 hover:underline font-semibold">/scanner/</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

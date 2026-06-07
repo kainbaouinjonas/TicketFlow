@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - BilletFacile{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <nav class="flex text-sm font-semibold mb-8 text-slate-500 dark:text-slate-400 gap-2">
+        <a href="{% url 'home' %}" class="hover:text-brand-500 transition-colors" x-text="t('home')">Accueil</a>
+        <span>/</span>
+        <span class="text-slate-900 dark:text-slate-100 truncate">{{ event.title }}</span>
+    </nav>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Left Side: Banner, Description -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Banner Card -->
+            <div class="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-900 aspect-[16/9]">
+                {% if event.banner %}
+                    <img src="{{ event.banner.url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gradient-to-tr from-brand-900/60 to-indigo-900/60 flex flex-col items-center justify-center text-white p-8">
+                        <svg class="w-20 h-20 text-brand-300 opacity-40 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="text-xl font-bold font-outfit opacity-80">{{ event.title }}</span>
+                    </div>
+                {% endif %}
+                <span class="absolute top-6 left-6 bg-brand-600 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl shadow-2xl">
+                    {{ event.category.name }}
+                </span>
+            </div>
+
+            <!-- Description -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-8 shadow-sm">
+                <h2 class="text-2xl font-bold font-outfit mb-4" x-text="t('about_event')">À propos de cet événement</h2>
+                <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 font-light leading-relaxed">
+                    {{ event.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Booking details, Pricing tiers -->
+        <div class="space-y-8">
+            <!-- Details Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-8 shadow-md">
+                <div class="space-y-6 mb-8">
+                    <!-- Date -->
+                    <div class="flex gap-4">
+                        <div class="bg-brand-500/10 border border-brand-500/20 text-brand-500 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div>
+                            <span class="block text-xs text-slate-400 font-medium" x-text="t('date_time')">Date & Heure</span>
+                            <span class="text-sm font-bold">{{ event.start_time|date:"d F Y \à H:i" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="flex gap-4">
+                        <div class="bg-brand-500/10 border border-brand-500/20 text-brand-500 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        <div>
+                            <span class="block text-xs text-slate-400 font-medium" x-text="t('event_location')">Lieu de l'événement</span>
+                            <span class="text-sm font-bold">{{ event.location }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Availability gauge -->
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between text-xs font-semibold mb-2">
+                            <span class="text-slate-500" x-text="t('availability')">Disponibilité des places</span>
+                            <span class="text-brand-500">{{ available_seats }} / {{ total_seats }} <span x-text="t('free')">libres</span></span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="bg-brand-600 h-full rounded-full transition-all" style="width: {% widthratio available_seats total_seats 100 %}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price categories -->
+                <div class="space-y-3 mb-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4" x-text="t('categories_prices')">Catégories & Tarifs</h3>
+                    
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-xs">
+                        <span class="font-bold text-purple-400">👑 VIP PREMIUM</span>
+                        <span class="font-extrabold text-sm text-purple-400" x-text="formatPrice(120)">120,00 €</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-xs">
+                        <span class="font-bold text-amber-400">🌟 ZONE OR</span>
+                        <span class="font-extrabold text-sm text-amber-400" x-text="formatPrice(60)">60,00 €</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-500/5 border border-slate-500/10 text-xs">
+                        <span class="font-bold text-slate-400">🎟️ STANDARD</span>
+                        <span class="font-extrabold text-sm text-slate-400" x-text="formatPrice(25)">25,00 €</span>
+                    </div>
+                </div>
+
+                <!-- Call to action button -->
+                {% if available_seats > 0 %}
+                    <a href="{% url 'event_seat_map' event.slug %}" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-center py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/25 flex items-center justify-center gap-2">
+                        <span x-text="t('choose_seats')">Choisir mes sièges en direct</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                {% else %}
+                    <button disabled class="w-full bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-600 font-bold py-4 rounded-2xl cursor-not-allowed" x-text="t('sold_out')">
+                        Complet / Sold Out
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

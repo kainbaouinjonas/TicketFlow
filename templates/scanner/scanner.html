@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Contrôle d'accès - Validateur de Billets - BilletFacile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+     x-data="{
+        scanMode: 'SIMULATION',
+        manualHash: '',
+        
+        triggerManualScan(hash) {
+            this.manualHash = hash;
+            // Trigger HTMX swap manually
+            htmx.ajax('POST', '{% url 'validate_ticket' %}', {
+                values: { qr_code_hash: hash },
+                target: '#scanner-result',
+                swap: 'innerHTML'
+            });
+        }
+     }">
+
+    <div class="flex items-center justify-between mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1" x-text="t('scanner_title')">Contrôle des Tickets</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light" x-text="t('scanner_subtitle')">Validation de signatures cryptographiques HMAC en temps réel.</p>
+        </div>
+        <div class="flex bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-xl">
+            <button @click="scanMode = 'SIMULATION'" 
+                    :class="scanMode === 'SIMULATION' ? 'bg-white dark:bg-slate-800 shadow-md font-bold' : ''"
+                    class="px-4 py-2 text-xs rounded-lg transition-all text-slate-700 dark:text-slate-350"
+                    x-text="t('demo_sim')">
+                Simulation Démo
+            </button>
+            <button @click="scanMode = 'CAMERA'; initCameraScanner()" 
+                    :class="scanMode === 'CAMERA' ? 'bg-white dark:bg-slate-800 shadow-md font-bold' : ''"
+                    class="px-4 py-2 text-xs rounded-lg transition-all text-slate-700 dark:text-slate-350"
+                    x-text="t('live_cam')">
+                Caméra Live
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Left Side: Scanner viewport or simulated drop inputs -->
+        <div class="space-y-6">
+            <!-- Simulated Input Dashboard (Testable out-of-the-box!) -->
+            <div x-show="scanMode === 'SIMULATION'" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-md">
+                <h3 class="font-bold text-base mb-3 font-outfit" x-text="t('sim_validator')">Simulateur de validation</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 font-light leading-relaxed" x-text="t('sim_desc')">
+                    Sélectionnez un ticket de test ci-dessous pour simuler un scan. Cela vous permet de valider le comportement cryptographique complet.
+                </p>
+
+                <!-- Paste Custom Hash -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2" x-text="t('crypto_signature')">Signature cryptographique du ticket (QR Code value)</label>
+                        <textarea x-model="manualHash" rows="3" :placeholder="t('paste_hash_placeholder') || 'Saisir ou coller un hash...'" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"></textarea>
+                    </div>
+                    <button @click="triggerManualScan(manualHash)" 
+                            class="w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/10"
+                            x-text="t('submit_sig')">
+                        Soumettre la signature
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Camera Scan Viewport -->
+            <div x-show="scanMode === 'CAMERA'" x-cloak class="bg-slate-950 rounded-3xl overflow-hidden aspect-video border border-slate-800 relative flex items-center justify-center">
+                <div id="reader" class="w-full h-full"></div>
+                <div class="absolute inset-4 border-2 border-dashed border-brand-500/50 rounded-2xl pointer-events-none animate-pulse"></div>
+            </div>
+        </div>
+
+        <!-- Right Side: Scanner Real-time Results display target -->
+        <div class="flex flex-col justify-center h-full">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4" x-text="t('analysis_result')">Résultat de l'analyse</h3>
+            
+            <div id="scanner-result" class="h-full">
+                <!-- Initial default placeholder card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-12 text-center shadow-sm flex flex-col items-center justify-center h-full min-h-[300px]">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-xl mb-3">🔍</div>
+                    <h4 class="font-bold font-outfit mb-1" x-text="t('awaiting_acquisition')">En attente d'acquisition</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-light max-w-xs leading-relaxed" x-text="t('scanner_placeholder_desc')">
+                        Scannez un ticket avec la caméra ou sélectionnez une signature de test pour lancer le processus d'analyse sécurisée.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load camera QR scanner script -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    let html5QrcodeScanner = null;
+
+    function initCameraScanner() {
+        // Prevent creating multiple scanner objects
+        if (html5QrcodeScanner) return;
+        
+        html5QrcodeScanner = new Html5Qrcode("reader");
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        // Success handler
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            // Stop scanning and validation
+            html5QrcodeScanner.stop();
+            
+            // Post via HTMX to validation endpoint
+            htmx.ajax('POST', '{% url 'validate_ticket' %}', {
+                values: { qr_code_hash: decodedText },
+                target: '#scanner-result',
+                swap: 'innerHTML',
+                handler: () => {
+                    // Automatically restart camera after 3 seconds delay
+                    setTimeout(() => {
+                        html5QrcodeScanner.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+                    }, 3000);
+                }
+            });
+        };
+
+        html5QrcodeScanner.start(
+            { facingMode: "environment" }, 
+            config, 
+            qrCodeSuccessCallback
+        ).catch(err => {
+            console.error("Camera access failed", err);
+        });
+    }
+</script>
+{% endblock %}

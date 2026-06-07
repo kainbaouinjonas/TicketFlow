@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{% lg %}{{ t('controller_space') }}{% endlg %} - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row items-start justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1 bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent" x-text="t('controller_space')">Espace Contrôleur</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light" x-text="t('controller_desc')">Gérez les validations de tickets, suivez votre activité de scan et assurez la sécurité des entrées.</p>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 uppercase tracking-wider" x-text="t('authorized_agent')">
+            🎫 Agent de Contrôle Autorisé
+        </span>
+    </div>
+
+    <!-- Main Action Panel -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-xl relative overflow-hidden mb-12">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="space-y-4 max-w-md">
+                <div class="bg-emerald-500/10 text-emerald-500 w-12 h-12 rounded-2xl flex items-center justify-center text-xl">
+                    📸
+                </div>
+                <h3 class="text-xl font-bold font-outfit" x-text="t('launch_scanner')">Lancer le Scanner Photo</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-light leading-relaxed" x-text="t('scanner_cam_desc')">
+                    Utilisez l'appareil photo de votre smartphone ou webcam pour scanner instantanément les codes QR des billets des participants.
+                </p>
+            </div>
+            
+            <a href="{% url 'scanner' %}" 
+               class="w-full md:w-auto shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-center text-sm px-8 py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2" x-text="t('open_scanner')">
+                📸 Ouvrir le Scanner
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats and Activity Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Left: Statistics Column -->
+        <div class="space-y-6">
+            <h4 class="text-sm font-bold font-outfit text-slate-400 uppercase tracking-wider" x-text="t('today_stats')">Statistiques du jour</h4>
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1" x-text="t('scans_today')">Scans Réussis Aujourd'hui</span>
+                    <span class="text-3xl font-black font-outfit text-emerald-500">{{ validations_count }}</span>
+                </div>
+                <span class="text-xl bg-emerald-500/10 p-2 rounded-xl text-emerald-500">✅</span>
+            </div>
+        </div>
+
+        <!-- Right: Recent Activity Log Column -->
+        <div class="md:col-span-2 space-y-6">
+            <h4 class="text-sm font-bold font-outfit text-slate-400 uppercase tracking-wider" x-text="t('recent_scans')">Vos derniers scans</h4>
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm">
+                <div class="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                    {% for log in recent_validations %}
+                        <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3 last:border-none last:pb-0 text-xs">
+                            <div class="flex items-start gap-3">
+                                <span class="text-lg">🎫</span>
+                                <div>
+                                    <span class="block font-bold text-slate-800 dark:text-slate-200">{{ log.action }}</span>
+                                    <span class="block text-[10px] text-slate-400 font-light">{{ log.details }}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-mono text-slate-400">{{ log.timestamp|date:"H:i:s" }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-8 text-slate-400 font-light text-xs" x-text="t('no_scans_today')">
+                            Aucun scan effectué aujourd'hui. Commencez à contrôler les entrées !
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

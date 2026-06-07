@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Plan de salle interactif - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" 
+     x-data="{ 
+        selectedSeats: [],
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        isPanning: false,
+        startX: 0,
+        startY: 0,
+        
+        toggleSeat(seatId, price, category, row, number) {
+            const index = this.selectedSeats.findIndex(s => s.id === seatId);
+            if (index > -1) {
+                // Call HTMX to remove from cart
+                htmx.ajax('POST', '/reservations/cart/remove/' + seatId + '/', {
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    handler: (elt, info) => {
+                        this.selectedSeats.splice(index, 1);
+                    }
+                });
+            } else {
+                // Call HTMX to add to cart
+                htmx.ajax('POST', '/reservations/cart/add/' + seatId + '/', {
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    handler: (elt, info) => {
+                        const res = JSON.parse(info.xhr.responseText);
+                        if (res.success) {
+                            this.selectedSeats.push({id: seatId, price: price, category: category, label: row + number});
+                        } else {
+                            alert(res.message || 'Une erreur est survenue.');
+                        }
+                    }
+                });
+            }
+        },
+        
+        resetPan() {
+            this.zoom = 1;
+            this.panX = 0;
+            this.panY = 0;
+        }
+     }">
+
+    <div class="flex flex-col lg:flex-row gap-12">
+        <!-- Left Column: Interactive Seat Grid Map -->
+        <div class="lg:col-span-2 flex-grow bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden p-8 shadow-2xl relative select-none">
+            <!-- Seat Map Header Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-8 relative z-10">
+                <div>
+                    <h2 class="text-xl font-bold font-outfit text-white mb-1" x-text="t('interactive_map')">Plan de Salle Interactif</h2>
+                    <p class="text-xs text-slate-400" x-text="t('stage_sub')">Scène / Écran situé en haut du plan</p>
+                </div>
+                <div class="flex gap-2 bg-slate-800 border border-slate-700 p-1.5 rounded-xl">
+                    <button @click="zoom = Math.min(zoom + 0.1, 2)" class="p-2 hover:bg-slate-700 text-white rounded-lg transition-colors font-bold text-sm">+</button>
+                    <button @click="zoom = Math.max(zoom - 0.1, 0.5)" class="p-2 hover:bg-slate-700 text-white rounded-lg transition-colors font-bold text-sm">-</button>
+                    <button @click="resetPan" class="px-3 py-2 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors" x-text="t('zoom_center')">Centrer</button>
+                </div>
+            </div>
+
+            <!-- Virtual Stage Graphic -->
+            <div class="w-full max-w-md mx-auto h-6 bg-gradient-to-r from-brand-600/40 via-indigo-500/40 to-brand-600/40 border-t border-brand-500 rounded-full flex items-center justify-center text-[10px] font-bold text-brand-300 tracking-[0.2em] uppercase shadow-lg shadow-brand-500/10 mb-16 relative z-10" x-text="t('stage')">
+                SCÈNE / ÉCRAN
+            </div>
+
+            <!-- Interactive SVG Layout -->
+            <div class="w-full overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-grab active:cursor-grabbing"
+                 @mousedown="isPanning = true; startX = $event.clientX - panX; startY = $event.clientY - panY"
+                 @mousemove="if(isPanning) { panX = $event.clientX - startX; panY = $event.clientY - startY }"
+                 @mouseup="isPanning = false"
+                 @mouseleave="isPanning = false">
+                 
+                <!-- SVG element with zoom/pan bind styles -->
+                <svg viewBox="0 0 {{ svg_width }} {{ svg_height }}" class="w-full h-full transition-transform duration-75 origin-center"
+                     :style="'transform: translate(' + panX + 'px, ' + panY + 'px) scale(' + zoom + ')'">
+                    
+                    {% for row_label, seats in seat_rows.items %}
+                        <!-- Row text -->
+                        <text x="40" y="{{ seats.0.row_y_text }}" class="fill-slate-500 font-bold text-sm" text-anchor="middle">
+                            Rang {{ row_label }}
+                        </text>
+                        
+                        {% for seat in seats %}
+                            <!-- Seat Element -->
+                            <g class="cursor-pointer"
+                               x-data="{ 
+                                    status: '{{ seat.status }}',
+                                    get colorClass() {
+                                        if (this.status === 'RESERVED') return 'fill-rose-950 stroke-rose-800';
+                                        if (this.status === 'LOCKED') return 'fill-slate-800 stroke-slate-700';
+                                        
+                                        // Category colors
+                                        if ('{{ seat.category }}' === 'VIP') return 'fill-purple-600/20 stroke-purple-500 hover:fill-purple-600';
+                                        if ('{{ seat.category }}' === 'GOLD') return 'fill-amber-600/20 stroke-amber-500 hover:fill-amber-600';
+                                        return 'fill-indigo-600/20 stroke-indigo-500 hover:fill-indigo-600';
+                                    }
+                               }"
+                               @seat-updated.window="if ($event.detail.seat_id == {{ seat.id }}) { status = $event.detail.status }"
+                               @click="if(status === 'AVAILABLE' || status === 'LOCKED') { toggleSeat({{ seat.id }}, {{ seat.price }}, '{{ seat.category }}', '{{ seat.row }}', {{ seat.number }}) }">
+                               
+                               <!-- Dynamic color circle representing status -->
+                               <rect x="{{ seat.x_coord }}" 
+                                     y="{{ seat.y_coord }}" 
+                                     width="45" height="40" rx="8"
+                                     class="transition-all duration-300 stroke-2"
+                                     :class="colorClass"
+                                     :stroke-dasharray="status === 'LOCKED' ? '4 2' : 'none'"/>
+                                     
+                               <text x="{{ seat.text_x }}" 
+                                     y="{{ seat.text_y }}" 
+                                     class="fill-white font-bold text-xs pointer-events-none" text-anchor="middle">
+                                   {{ seat.number }}
+                               </text>
+                            </g>
+                        {% endfor %}
+                    {% endfor %}
+                </svg>
+            </div>
+
+            <!-- Seat Legend -->
+            <div class="flex flex-wrap justify-center gap-6 mt-8 pt-8 border-t border-slate-800 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-purple-500/20 border border-purple-500"></span>
+                    <span class="text-slate-400">VIP (<span x-text="formatPrice(120)"></span>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-amber-500/20 border border-amber-500"></span>
+                    <span class="text-slate-400">Zone Or (<span x-text="formatPrice(60)"></span>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-indigo-500/20 border border-indigo-500"></span>
+                    <span class="text-slate-400">Standard (<span x-text="formatPrice(25)"></span>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-slate-800 border border-slate-700 border-dashed"></span>
+                    <span class="text-slate-400" x-text="t('locked')">Verrouillé</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-rose-950 border border-rose-800"></span>
+                    <span class="text-slate-400" x-text="t('reserved')">Réservé</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sidebar Cart Confirmation -->
+        <div class="lg:w-96 shrink-0 space-y-8">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-lg flex flex-col h-full justify-between">
+                <div>
+                    <h3 class="text-lg font-bold font-outfit mb-2" x-text="t('seats_selected')">Vos Places Sélectionnées</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-6" x-text="t('seats_selected_desc')">Les places sélectionnées sont réservées temporairement pendant 15 minutes.</p>
+
+                    <!-- Dynamic seat item listing -->
+                    <div class="space-y-3 max-h-60 overflow-y-auto mb-6">
+                        <template x-for="seat in selectedSeats" :key="seat.id">
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                <div>
+                                    <span class="block text-sm font-bold font-outfit"><span x-text="t('seat_label')">Siège</span> <span x-text="seat.label"></span></span>
+                                    <span class="text-[10px] uppercase font-semibold text-slate-400" x-text="seat.category"></span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-extrabold text-brand-600 dark:text-brand-400" x-text="formatPrice(seat.price)"></span>
+                                    <button @click="toggleSeat(seat.id, seat.price, seat.category, '', seat.label)" class="text-slate-400 hover:text-rose-500 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <div x-show="selectedSeats.length === 0" class="text-center py-8 text-slate-400 text-sm font-light" x-text="t('seat_click_hint')">
+                            Cliquez sur un siège libre pour l'ajouter.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Cart actions -->
+                <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-sm font-medium text-slate-500" x-text="t('subtotal')">Sous-total</span>
+                        <span class="text-2xl font-black font-outfit text-brand-600 dark:text-brand-400" 
+                              x-text="formatPrice(selectedSeats.reduce((acc, curr) => acc + curr.price, 0))"></span>
+                    </div>
+
+                    <!-- Checkout redirect -->
+                    <form method="POST" action="{% url 'create_reservation' %}">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                :disabled="selectedSeats.length === 0"
+                                class="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 font-bold text-center py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/25 flex items-center justify-center gap-2">
+                            <span x-text="t('confirm_selection')">Confirmer la sélection</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WebSocket Channel Listener Code -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = protocol + '//' + window.location.host + '/ws/events/{{ event.id }}/';
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'seat_update') {
+                // Dispatch event locally that rects inside SVG listen to
+                window.dispatchEvent(new CustomEvent('seat-updated', { detail: data }));
+            }
+        };
+
+        // Simple ping heartbeat every 30 seconds
+        setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000);
+    });
+</script>
+{% endblock %}

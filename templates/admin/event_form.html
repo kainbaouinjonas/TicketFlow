@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Administration TicketFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.5);
+    }
+    .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.8);
+    }
+    select option {
+        background: #0f172a;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-8">
+        <a href="{% url 'admin_dashboard' %}" class="hover:text-brand-500 transition">Administration</a>
+        <span>/</span>
+        <span class="text-slate-900 dark:text-slate-100">{{ title }}</span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-r from-brand-600/10 to-indigo-600/10 border-b border-slate-200/80 dark:border-slate-800/80 p-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-brand-600 to-indigo-600 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                    🎭
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold font-outfit">{{ title }}</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Les sièges seront automatiquement générés selon la capacité choisie (10% VIP · 30% Or · 60% Standard).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <form method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
+            {% csrf_token %}
+
+            <!-- Section: Informations générales -->
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5 flex items-center gap-2">
+                    <span class="w-5 h-px bg-slate-300 dark:bg-slate-700"></span>
+                    Informations générales
+                    <span class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></span>
+                </h2>
+                <div class="space-y-5">
+                    <!-- Titre -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                            Titre de l'événement <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}{% for e in form.title.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                    </div>
+
+                    <!-- Catégorie -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                            Catégorie <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}{% for e in form.category.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                            Description <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}{% for e in form.description.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Lieu & Dates -->
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5 flex items-center gap-2">
+                    <span class="w-5 h-px bg-slate-300 dark:bg-slate-700"></span>
+                    Lieu & Dates
+                    <span class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></span>
+                </h2>
+                <div class="space-y-5">
+                    <!-- Lieu -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                            Lieu de l'événement <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}{% for e in form.location.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                                Date de début <span class="text-rose-500">*</span>
+                            </label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}{% for e in form.start_time.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                                Date de fin <span class="text-rose-500">*</span>
+                            </label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}{% for e in form.end_time.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Capacité & Médias -->
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5 flex items-center gap-2">
+                    <span class="w-5 h-px bg-slate-300 dark:bg-slate-700"></span>
+                    Capacité & Médias
+                    <span class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></span>
+                </h2>
+                <div class="space-y-5">
+                    <!-- Capacité & Prix -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                                Capacité totale <span class="text-rose-500">*</span>
+                            </label>
+                            {{ form.total_capacity }}
+                            <p class="text-xs text-slate-400 font-light mt-1.5 flex items-center gap-1">
+                                ℹ️ Les sièges seront générés : <strong class="text-purple-500">10% VIP</strong>, <strong class="text-amber-500">30% Or</strong>, <strong class="text-slate-500">60% Standard</strong>
+                            </p>
+                            {% if form.total_capacity.errors %}{% for e in form.total_capacity.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                                Prix de base (€ / FCFA) <span class="text-rose-500">*</span>
+                            </label>
+                            {{ form.price }}
+                            <p class="text-xs text-slate-400 font-light mt-1.5 flex items-center gap-1">
+                                ℹ️ Multiplicateurs : <strong class="text-purple-500">VIP x4.8</strong>, <strong class="text-amber-500">Or x2.4</strong>, <strong class="text-slate-500">Std x1.0</strong>
+                            </p>
+                            {% if form.price.errors %}{% for e in form.price.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Banner Image -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                            Image de bannière
+                        </label>
+                        <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-brand-500/50 transition">
+                            {{ form.banner }}
+                            <p class="text-xs text-slate-400 mt-2 font-light">PNG, JPG, WebP — 5 MB maximum</p>
+                        </div>
+                        {% if form.banner.errors %}{% for e in form.banner.errors %}<span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>{% endfor %}{% endif %}
+                    </div>
+
+                    <!-- Publié -->
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                        {{ form.is_published }}
+                        <div>
+                            <label class="text-sm font-bold cursor-pointer" for="{{ form.is_published.id_for_label }}">Publier l'événement</label>
+                            <p class="text-xs text-slate-400 font-light">L'événement sera visible pour tous les utilisateurs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <a href="{% url 'admin_dashboard' %}" class="flex-1 px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-950 transition">
+                    Annuler
+                </a>
+                <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Enregistrer l'événement
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

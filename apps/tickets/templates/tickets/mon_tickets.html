@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes billets - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-900 py-8">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <h1 class="text-3xl font-bold text-white mb-8">
+            <i class="fas fa-ticket-alt text-purple-500 mr-2"></i>
+            Mes billets
+        </h1>
+        
+        {% if tickets %}
+            <div class="space-y-4">
+                {% for ticket in tickets %}
+                <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 hover:border-purple-500 transition">
+                    <div class="flex flex-col md:flex-row">
+                        <!-- QR Code -->
+                        <div class="bg-white p-4 flex items-center justify-center md:w-40">
+                            <img src="{% url 'ticket_qr' ticket.ticket_code %}" alt="QR Code" class="w-32 h-32">
+                        </div>
+                        
+                        <!-- Ticket Info -->
+                        <div class="flex-1 p-6">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">{{ ticket.event_title }}</h2>
+                                    <p class="text-slate-400 mt-1">
+                                        <i class="fas fa-map-marker-alt mr-1"></i> {{ ticket.event_location }}
+                                    </p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-sm
+                                    {% if ticket.is_validated %}
+                                        bg-red-500/20 text-red-400
+                                    {% else %}
+                                        bg-green-500/20 text-green-400
+                                    {% endif %}">
+                                    {% if ticket.is_validated %}
+                                        <i class="fas fa-check-circle mr-1"></i> Utilisé
+                                    {% else %}
+                                        <i class="fas fa-circle mr-1"></i> Valide
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+                                <div>
+                                    <span class="text-slate-500">Place :</span>
+                                    <span class="text-white ml-2 font-mono">{{ ticket.seat_label }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500">Catégorie :</span>
+                                    <span class="ml-2">
+                                        {% if ticket.seat.category == 'VIP' %}
+                                            <span class="text-yellow-400">⭐ VIP</span>
+                                        {% elif ticket.seat.category == 'GOLD' %}
+                                            <span class="text-amber-500">🥇 Or</span>
+                                        {% else %}
+                                            <span class="text-slate-300">🎫 Standard</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-slate-500">Date :</span>
+                                    <span class="text-white ml-2">{{ ticket.event_start_time|date:"l d F Y à H:i" }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if not ticket.is_validated %}
+                            <div class="mt-4 flex gap-3">
+                                <a href="{% url 'ticket_qr' ticket.ticket_code %}" target="_blank" 
+                                   class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition">
+                                    <i class="fas fa-qrcode mr-2"></i> Voir QR Code
+                                </a>
+                                <a href="{% url 'ticket_pdf' ticket.ticket_code %}" 
+                                   class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition">
+                                    <i class="fas fa-download mr-2"></i> PDF
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="mt-4 text-slate-500 text-sm">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Validé le {{ ticket.validated_at|date:"d/m/Y à H:i" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-slate-800 rounded-xl p-12 text-center">
+                <div class="text-6xl text-slate-600 mb-4">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-white mb-2">Aucun billet</h2>
+                <p class="text-slate-400 mb-6">Vous n'avez pas encore de billets.</p>
+                <a href="{% url 'home' %}" class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition">
+                    <i class="fas fa-calendar-alt mr-2"></i> Découvrir les événements
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

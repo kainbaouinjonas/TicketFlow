@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block title %}Paiement Sécurisé - Réservation #{{ reservation.id }} - BilletFacile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+     x-data="checkoutComponent('{{ reservation.id }}', '{{ csrf_token }}')">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Left Column: Payment selection, payment methods forms -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Payment selection card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-md">
+                <h2 class="text-xl font-bold font-outfit mb-6" x-text="t('payment_method')">Moyen de paiement</h2>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+                    <!-- Card Select Button -->
+                    <button @click="paymentMethod = 'CARD'" 
+                            :class="paymentMethod === 'CARD' ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400 font-bold' : 'border-slate-200 dark:border-slate-800'"
+                            class="flex flex-col items-center justify-center p-4 border rounded-2xl transition-all gap-2 text-center text-xs">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                        <span x-text="t('credit_card') || 'Carte Bancaire'">Carte Bancaire</span>
+                    </button>
+                    <!-- PayPal Select Button -->
+                    <button @click="paymentMethod = 'PAYPAL'" 
+                            :class="paymentMethod === 'PAYPAL' ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400 font-bold' : 'border-slate-200 dark:border-slate-800'"
+                            class="flex flex-col items-center justify-center p-4 border rounded-2xl transition-all gap-2 text-center text-xs">
+                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        PayPal
+                    </button>
+                    <!-- Orange Money Select Button -->
+                    <button @click="paymentMethod = 'ORANGE_MONEY'" 
+                            :class="paymentMethod === 'ORANGE_MONEY' ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400 font-bold' : 'border-slate-200 dark:border-slate-800'"
+                            class="flex flex-col items-center justify-center p-4 border rounded-2xl transition-all gap-2 text-center text-xs">
+                        <span class="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center text-white text-[10px] font-black">OM</span>
+                        Orange Money
+                    </button>
+                    <!-- MTN MoMo Select Button -->
+                    <button @click="paymentMethod = 'MTN_MOMO'" 
+                            :class="paymentMethod === 'MTN_MOMO' ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400 font-bold' : 'border-slate-200 dark:border-slate-800'"
+                            class="flex flex-col items-center justify-center p-4 border rounded-2xl transition-all gap-2 text-center text-xs">
+                        <span class="w-6 h-6 bg-yellow-400 rounded-lg flex items-center justify-center text-slate-900 text-[10px] font-black">MTN</span>
+                        MTN MoMo
+                    </button>
+                </div>
+
+                <!-- Error Messages Box -->
+                <div x-show="errorMessage" x-cloak class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold flex items-center gap-2">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span x-text="errorMessage"></span>
+                </div>
+
+                <!-- Form: Card Details -->
+                <div x-show="paymentMethod === 'CARD'" class="space-y-6">
+                    <!-- Dynamic Virtual Credit Card Mockup -->
+                    <div class="relative w-full aspect-[1.586/1] max-w-sm mx-auto bg-gradient-to-tr from-slate-900 to-indigo-950 border border-indigo-500/20 rounded-3xl p-6 text-white shadow-2xl flex flex-col justify-between overflow-hidden">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 rounded-full blur-2xl"></div>
+                        <div class="flex justify-between items-start">
+                            <span class="text-sm font-bold uppercase tracking-wider" x-text="t('privilege_card') || 'Carte Privilège'">Carte Privilège</span>
+                            <span class="font-bold text-lg font-outfit text-slate-400">VISA</span>
+                        </div>
+                        <div>
+                            <div class="text-xl sm:text-2xl font-mono tracking-widest text-slate-100 mb-4">•••• •••• •••• 4242</div>
+                            <div class="flex justify-between items-center text-xs text-slate-400">
+                                <div>
+                                    <span class="block text-[9px] uppercase font-bold text-slate-500" x-text="t('holder') || 'Titulaire'">Titulaire</span>
+                                    <span class="font-semibold text-slate-200">Jean Dupont</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-[9px] uppercase font-bold text-slate-500" x-text="t('expires') || 'Expire'">Expire</span>
+                                    <span class="font-semibold text-slate-200">12/29</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2" x-text="t('card_holder') || 'Titulaire de la carte'">Titulaire de la carte</label>
+                            <input type="text" value="Jean Dupont" class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold">
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2" x-text="t('card_number') || 'Numéro de carte'">Numéro de carte</label>
+                                <input type="text" value="4242 4242 4242 4242" class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-400 mb-2" x-text="t('expiration') || 'Expiration'">Expiration</label>
+                                <input type="text" value="12/29" class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form: PayPal checkout info -->
+                <div x-show="paymentMethod === 'PAYPAL'" class="py-6 text-center space-y-4">
+                    <div class="bg-blue-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-blue-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-lg font-outfit" x-text="t('paypal_redirect') || 'Redirection PayPal sécurisée'">Redirection PayPal sécurisée</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-light max-w-sm mx-auto" x-text="t('paypal_redirect_desc') || 'Vous allez être redirigé vers la passerelle sécurisée PayPal pour valider votre transaction.'">
+                        Vous allez être redirigé vers la passerelle sécurisée PayPal pour valider votre transaction.
+                    </p>
+                </div>
+
+                <!-- Form: Orange Money or MTN MoMo phone inputs -->
+                <div x-show="paymentMethod === 'ORANGE_MONEY' || paymentMethod === 'MTN_MOMO'" class="space-y-6">
+                    <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                        <span class="text-2xl" x-text="paymentMethod === 'ORANGE_MONEY' ? '🍊' : '🟡'"></span>
+                        <div>
+                            <h3 class="font-bold text-sm" x-text="paymentMethod === 'ORANGE_MONEY' ? (t('om_payment') || 'Paiement par Orange Money') : (t('mtn_payment') || 'Paiement par MTN MoMo')"></h3>
+                            <p class="text-xs text-slate-400" x-text="t('otp_confirm') || 'Confirmation par code OTP instantané'">Confirmation par code OTP instantané</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2" x-text="t('phone_label') || 'Indicateur Pays & Numéro de téléphone'">Indicateur Pays & Numéro de téléphone</label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <select x-model="countryCode" @change="phoneInput = ''" class="px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold">
+                                <template x-for="c in countries" :key="c.code">
+                                    <option :value="c.code" x-text="c.name"></option>
+                                </template>
+                            </select>
+                            <input type="tel" x-model="phoneInput" 
+                                   @input="phoneInput = phoneInput.replace(/\D/g, '')"
+                                   :placeholder="countryCode === '225' ? '0707070707' : countryCode === '221' ? '771234567' : '690000000'"
+                                   class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold">
+                        </div>
+                        <p x-show="phoneInput && !isPhoneValid" class="text-xs text-rose-500 mt-2 font-medium">
+                            <span x-text="t('phone_format_error') || 'Format ou préfixe incorrect pour ce pays.'">Format ou préfixe incorrect pour ce pays.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Submit Action Button -->
+                <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <button @click="processPaymentSubmit()" 
+                            :disabled="isProcessing || (paymentMethod.includes('MONEY') && !isPhoneValid)"
+                            class="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-center py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/20 flex items-center justify-center gap-2">
+                        <!-- Loading spinner -->
+                        <svg x-show="isProcessing" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span x-text="isProcessing ? (t('transaction_processing') || 'Transaction en cours...') : (t('proceed_payment_of') || 'Procéder au paiement de') + ' ' + formatPrice({{ reservation.total_price }})"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Booking review summary -->
+        <div class="space-y-8">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-md">
+                <h3 class="text-lg font-bold font-outfit mb-6" x-text="t('order_summary') || 'Résumé de la commande'">Résumé de la commande</h3>
+                
+                <div class="space-y-4 mb-6">
+                    {% for seat in reservation.seats.all %}
+                        <div class="flex justify-between items-start py-2 border-b border-slate-100 dark:border-slate-800 last:border-none text-xs">
+                            <div>
+                                <span class="block font-bold text-sm font-outfit">{{ seat.event.title }}</span>
+                                <span class="text-slate-400"><span x-text="t('seat_label')">Siège</span> {{ seat.row }}{{ seat.number }} ({{ seat.category }})</span>
+                            </div>
+                            <span class="font-extrabold text-brand-600 dark:text-brand-400" x-text="formatPrice({{ seat.price }})">{{ seat.price }} €</span>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-sm">
+                    <span class="font-semibold text-slate-500" x-text="t('total_amount') || 'Montant total'">Montant total</span>
+                    <span class="text-2xl font-black font-outfit text-brand-600 dark:text-brand-400" x-text="formatPrice({{ reservation.total_price }})">{{ reservation.total_price }} €</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Input Modal overlay (for Mobile Money payments only) -->
+    <div x-show="showOtpModal" x-cloak class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div @click.away="showOtpModal = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl">💬</div>
+                <h3 class="text-xl font-bold font-outfit" x-text="t('enter_otp') || 'Saisir le code de validation'">Saisir le code de validation</h3>
+                <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                    <span x-text="t('otp_sent_to') || 'Un code de confirmation OTP a été envoyé au numéro'">Un code de confirmation OTP a été envoyé au numéro</span> <strong class="text-slate-200" x-text="'+' + countryCode + ' ' + phoneInput"></strong>.
+                </p>
+            </div>
+
+            <!-- Demo OTP Code Banner (shown in test mode) -->
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-center">
+                <p class="text-xs text-amber-600 dark:text-amber-400 font-semibold mb-2" x-text="t('demo_mode_otp') || '🔔 Mode démonstration — Code OTP reçu :'"></p>
+                <div class="text-3xl font-black font-mono tracking-widest text-amber-500 cursor-pointer select-all"
+                     x-text="otpDemoCode"
+                     @click="otpInput = otpDemoCode"
+                     title="Cliquez pour remplir automatiquement">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2" x-text="t('demo_otp_click') || '← Cliquez sur le code pour le remplir automatiquement'"></p>
+            </div>
+
+            <!-- OTP Input -->
+            <div>
+                <input type="text" x-model="otpInput" maxlength="6" inputmode="numeric"
+                       @keypress="if(!/[0-9]/.test($event.key)) $event.preventDefault()"
+                       placeholder="------" 
+                       class="w-full text-center text-3xl font-bold tracking-[0.4em] px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder-slate-700">
+                <div class="text-center text-xs text-slate-400 mt-3 font-semibold">
+                    <span x-text="t('otp_valid_for') || 'Code valable encore'">Code valable encore</span> <span class="text-amber-500 font-mono" x-text="countdown + 's'"></span>
+                </div>
+            </div>
+
+            <!-- Error display in OTP modal -->
+            <div x-show="errorMessage" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold text-center" x-text="errorMessage"></div>
+
+            <!-- Submit OTP action -->
+            <button @click="verifyOtpSubmit()"
+                    :disabled="isProcessing || otpInput.length < 6"
+                    class="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-center py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/20 flex items-center justify-center gap-2">
+                <svg x-show="isProcessing" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span x-text="isProcessing ? (t('validation') || 'Validation...') : (t('confirm_payment') || 'Confirmer le paiement')">Confirmer le paiement</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('checkoutComponent', (reservationId, csrfToken) => ({
+            paymentMethod: 'CARD',
+            phoneInput: '',
+            otpInput: '',
+            transactionId: '',
+            showOtpModal: false,
+            isProcessing: false,
+            countdown: 60,
+            errorMessage: '',
+            otpDemoCode: '',
+            countryCode: '225',
+            countries: [
+                { code: '225', name: "Côte d'Ivoire (+225)", length: 10, orangePrefixes: ['07', '08', '09'], mtnPrefixes: ['05', '04'] },
+                { code: '221', name: 'Sénégal (+221)', length: 9, orangePrefixes: ['77', '78'], mtnPrefixes: [] },
+                { code: '237', name: 'Cameroun (+237)', length: 9, orangePrefixes: ['69', '650', '651', '652', '653', '654'], mtnPrefixes: ['67', '68', '655', '656', '657', '658', '659'] },
+                { code: '229', name: 'Bénin (+229)', length: 8, orangePrefixes: ['97', '96'], mtnPrefixes: ['97', '96', '61', '62', '69'] },
+                { code: '223', name: 'Mali (+223)', length: 8, orangePrefixes: ['7', '8'], mtnPrefixes: ['6'] },
+                { code: '242', name: 'Congo (+242)', length: 9, orangePrefixes: ['06'], mtnPrefixes: ['05'] }
+            ],
+            
+            get isPhoneValid() {
+                if (!this.paymentMethod.includes('MONEY')) return true;
+                if (!this.phoneInput) return false;
+                
+                const cleanNum = this.phoneInput.replace(/\D/g, '');
+                const currentCountry = this.countries.find(c => c.code === this.countryCode);
+                if (!currentCountry) return cleanNum.length >= 8;
+                
+                if (cleanNum.length !== currentCountry.length) return false;
+                
+                const prefixes = this.paymentMethod === 'ORANGE_MONEY' ? currentCountry.orangePrefixes : currentCountry.mtnPrefixes;
+                if (prefixes.length === 0) return false;
+                
+                return prefixes.some(pref => cleanNum.startsWith(pref));
+            },
+            
+            processPaymentSubmit() {
+                if (this.paymentMethod.includes('MONEY') && !this.isPhoneValid) {
+                    this.errorMessage = this.t('phone_format_error') || 'Format du numéro de téléphone incorrect.';
+                    return;
+                }
+                
+                this.isProcessing = true;
+                this.errorMessage = '';
+                
+                const formData = new FormData();
+                formData.append('reservation_id', reservationId);
+                formData.append('payment_method', this.paymentMethod);
+                if (this.paymentMethod === 'ORANGE_MONEY' || this.paymentMethod === 'MTN_MOMO') {
+                    formData.append('phone_number', this.countryCode + this.phoneInput.replace(/\D/g, ''));
+                }
+                
+                fetch('/payments/process/', {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken},
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.isProcessing = false;
+                    if (data.success) {
+                        if (data.method === 'mobile_money') {
+                            this.transactionId = data.transaction_id;
+                            // Extract OTP code from message for demo
+                            const otpMatch = data.message.match(/:\s*(\d{6})\s*\)/);
+                            if (otpMatch) {
+                                this.otpDemoCode = otpMatch[1];
+                            }
+                            this.showOtpModal = true;
+                            this.startOtpTimer();
+                            if (typeof showToast === 'function') {
+                                showToast(data.message, 'success');
+                            }
+                        } else if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        }
+                    } else {
+                        this.errorMessage = data.message;
+                    }
+                })
+                .catch(() => {
+                    this.isProcessing = false;
+                    this.errorMessage = this.t('service_unavailable') || 'Service momentanément indisponible.';
+                });
+            },
+            
+            verifyOtpSubmit() {
+                this.isProcessing = true;
+                this.errorMessage = '';
+                
+                const formData = new FormData();
+                formData.append('transaction_id', this.transactionId);
+                formData.append('otp', this.otpInput);
+                
+                fetch('/payments/verify-otp/', {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken},
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.isProcessing = false;
+                    if (data.success) {
+                        this.showOtpModal = false;
+                        window.location.href = data.redirect_url;
+                    } else {
+                        this.errorMessage = data.message;
+                    }
+                })
+                .catch(() => {
+                    this.isProcessing = false;
+                    this.errorMessage = this.t('connection_error') || 'Erreur de connexion.';
+                });
+            },
+            
+            startOtpTimer() {
+                this.countdown = 60;
+                const timer = setInterval(() => {
+                    if (this.countdown > 0) {
+                        this.countdown--;
+                    } else {
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            }
+        }));
+    });
+</script>
+{% endblock %}
+

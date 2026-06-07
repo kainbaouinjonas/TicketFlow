@@ -1,0 +1,42 @@
+{% if status == 'success' %}
+    <!-- Valid Ticket Emerald Panel -->
+    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-8 shadow-lg flex flex-col justify-between h-full min-h-[300px] text-center items-center">
+        <div>
+            <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mx-auto mb-3 animate-bounce">✔</div>
+            <h4 class="text-xl font-bold font-outfit text-emerald-400 mb-2" x-text="t('access_granted')">{{ message }}</h4>
+            <p class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">{{ category }}</p>
+        </div>
+        <div class="space-y-1 py-4 border-t border-slate-200/20 w-full mt-4">
+            <span class="block text-base font-bold text-white">{{ event }}</span>
+            <span class="block text-xs text-slate-400 font-bold">{{ seat }}</span>
+        </div>
+        <div class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-4" x-text="t('access_granted')">Accès Autorisé</div>
+    </div>
+
+{% elif status == 'warning' %}
+    <!-- Replay Scanned Amber Panel -->
+    <div class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 shadow-lg flex flex-col justify-between h-full min-h-[300px] text-center items-center">
+        <div>
+            <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3 animate-pulse">⚠</div>
+            <h4 class="text-lg font-bold font-outfit text-amber-400 mb-2" x-text="t('double_validation_blocked')">{{ message }}</h4>
+        </div>
+        <div class="space-y-1 py-4 border-t border-slate-200/20 w-full mt-4">
+            <span class="block text-sm font-semibold text-slate-300">{{ event }}</span>
+            <span class="block text-xs text-slate-400">{{ seat }}</span>
+        </div>
+        <div class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-4" x-text="t('double_validation_blocked')">Double Passage Bloqué</div>
+    </div>
+
+{% else %}
+    <!-- Fake / Invalid Ticket Rose Panel -->
+    <div class="bg-rose-500/10 border border-rose-500/30 rounded-3xl p-8 shadow-lg flex flex-col justify-between h-full min-h-[300px] text-center items-center justify-center">
+        <div class="my-auto">
+            <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mx-auto mb-3 animate-pulse">❌</div>
+            <h4 class="text-xl font-bold font-outfit text-rose-400 mb-2" x-text="t('access_denied')">{{ message }}</h4>
+            <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mt-2" x-text="t('counterfeit_warning')">
+                Cette signature cryptographique ne correspond à aucun ticket actif en base de données. Attention à la contrefaçon !
+            </p>
+        </div>
+        <div class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-4" x-text="t('access_denied')">Accès Refusé</div>
+    </div>
+{% endif %}

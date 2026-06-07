@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer l'événement - Administration{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 py-16">
+    <div class="bg-white dark:bg-slate-900 border border-rose-200/60 dark:border-rose-900/40 rounded-3xl p-10 shadow-2xl text-center">
+        <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-4 text-xl">
+            🗑️
+        </div>
+        <h1 class="text-2xl font-bold font-outfit mb-2">Supprimer l'événement ?</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-light mb-2">
+            Vous êtes sur le point de supprimer définitivement :
+        </p>
+        <p class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">
+            « {{ event.title }} »
+        </p>
+        <p class="text-xs text-slate-400 mb-8">
+            📍 {{ event.location }} • 📅 {{ event.start_time|date:"d F Y à H:i" }}
+        </p>
+
+        <div class="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 mb-8 text-left">
+            <p class="text-sm font-semibold text-rose-500 flex items-center gap-2 mb-2">
+                <span>⚠️</span> Cette action est irréversible
+            </p>
+            <ul class="text-xs text-slate-500 dark:text-slate-400 space-y-1 font-light list-disc list-inside">
+                <li>Tous les sièges de cet événement seront supprimés</li>
+                <li>Les réservations et billets associés seront perdus</li>
+                <li>Les paiements associés resteront enregistrés</li>
+            </ul>
+        </div>
+
+        <div class="flex gap-4">
+            <a href="{% url 'admin_dashboard' %}" class="flex-1 px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-950 transition">
+                Annuler
+            </a>
+            <form method="POST" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Oui, supprimer définitivement
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

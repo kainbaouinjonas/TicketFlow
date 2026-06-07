@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer un Contrôleur - Administration{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-8">
+        <a href="{% url 'admin_dashboard' %}" class="hover:text-brand-500 transition">Administration</a>
+        <span>/</span>
+        <a href="{% url 'list_controllers' %}" class="hover:text-brand-500 transition">Contrôleurs</a>
+        <span>/</span>
+        <span class="text-slate-900 dark:text-slate-100">Créer</span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-b border-slate-200/80 dark:border-slate-800/80 p-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-500 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                    🔍
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold font-outfit">Créer un compte Contrôleur</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Le contrôleur pourra scanner et valider les tickets des événements depuis le portail dédié.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <form method="POST" class="p-8 space-y-6">
+            {% csrf_token %}
+
+            <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-xs text-blue-600 dark:text-blue-400">
+                🔐 Le contrôleur se connectera avec son <strong>nom d'utilisateur</strong> et son <strong>mot de passe</strong> sur la page de connexion standard, puis sera redirigé vers le scanner.
+            </div>
+
+            <!-- Username -->
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                    Nom d'utilisateur <span class="text-rose-500">*</span>
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    {% for e in form.username.errors %}
+                        <span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                    Email <span class="text-rose-500">*</span>
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    {% for e in form.email.errors %}
+                        <span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                    Téléphone (optionnel)
+                </label>
+                {{ form.phone_number }}
+            </div>
+
+            <!-- Password -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                        Mot de passe <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        {% for e in form.password1.errors %}
+                            <span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">
+                        Confirmer le mot de passe <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        {% for e in form.password2.errors %}
+                            <span class="text-xs text-rose-500 mt-1 block">{{ e }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <a href="{% url 'list_controllers' %}" class="flex-1 px-6 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-950 transition">
+                    Annuler
+                </a>
+                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Créer le contrôleur
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

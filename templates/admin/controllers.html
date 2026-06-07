@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Contrôleurs - Administration{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="{% url 'admin_dashboard' %}" class="text-xs font-semibold text-slate-400 hover:text-brand-500 transition">Administration</a>
+                <span class="text-slate-300">/</span>
+                <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Contrôleurs</span>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1 bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                🔍 Contrôleurs de tickets
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light">
+                Gérez les comptes contrôleurs chargés de scanner et valider les billets à l'entrée des événements.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'admin_dashboard' %}" class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition flex items-center gap-1.5">
+                ← Tableau de bord
+            </a>
+            <a href="{% url 'create_controller' %}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+                ➕ Nouveau contrôleur
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 mb-8 flex items-center gap-3">
+        <span class="text-xl">🎫</span>
+        <div>
+            <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Rôle Contrôleur</p>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-light">
+                Les contrôleurs ont accès exclusivement au scanner de tickets. Ils ne peuvent pas créer ni modifier des événements.
+                L'accès au scanner se fait via <strong>/scanner/</strong>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Controllers Table -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <h3 class="text-lg font-bold font-outfit">Comptes Contrôleurs</h3>
+            <span class="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">{{ controllers|length }} contrôleur(s)</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950">
+                        <th class="py-4 px-8">Utilisateur</th>
+                        <th class="py-4 px-6">Email</th>
+                        <th class="py-4 px-6">Téléphone</th>
+                        <th class="py-4 px-6">Statut</th>
+                        <th class="py-4 px-6">Créé le</th>
+                        <th class="py-4 px-8 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                    {% for ctrl in controllers %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors">
+                            <td class="py-4 px-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-white text-xs font-bold">
+                                        {{ ctrl.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <span class="block font-bold text-slate-900 dark:text-slate-100">{{ ctrl.username }}</span>
+                                        <span class="text-xs text-emerald-500 font-semibold">Contrôleur</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-slate-500 text-xs">{{ ctrl.email }}</td>
+                            <td class="py-4 px-6 text-slate-500 font-mono text-xs">{{ ctrl.phone_number|default:"–" }}</td>
+                            <td class="py-4 px-6">
+                                {% if ctrl.is_active %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Actif
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        Inactif
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 font-mono text-xs text-slate-500">{{ ctrl.date_joined|date:"d/m/Y" }}</td>
+                            <td class="py-4 px-8 text-right">
+                                {% if ctrl.is_active %}
+                                <form method="POST" action="{% url 'delete_controller' ctrl.id %}" class="inline" onsubmit="return confirm('Désactiver ce contrôleur ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-xs font-bold text-rose-500 hover:underline">
+                                        Désactiver
+                                    </button>
+                                </form>
+                                {% else %}
+                                    <span class="text-xs text-slate-400 italic">Désactivé</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-16 text-center">
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-xl">🔍</div>
+                                    <p class="text-slate-400 font-light text-sm">Aucun contrôleur créé pour le moment.</p>
+                                    <a href="{% url 'create_controller' %}" class="text-sm font-bold text-emerald-600 hover:text-emerald-700">Créer le premier contrôleur →</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

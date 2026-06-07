@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Journaux d'Audit - Administration{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1">Journaux d'Audit</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light">Trace complète des opérations administratives.</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition">
+            ← Retour au Dashboard
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 mb-6">
+        <form method="GET" class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[150px]">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Utilisateur</label>
+                <input type="text" name="user" value="{{ request.GET.user|default:'' }}" placeholder="Nom d'utilisateur..." class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+            </div>
+            <div class="flex-1 min-w-[150px]">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Action</label>
+                <input type="text" name="action" value="{{ request.GET.action|default:'' }}" placeholder="Action..." class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+            </div>
+            <div>
+                <button type="submit" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold transition">Filtrer</button>
+                <a href="{% url 'admin_logs' %}" class="px-5 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition ml-2">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950">
+                        <th class="py-4 px-6">Date & Heure</th>
+                        <th class="py-4 px-6">Opérateur</th>
+                        <th class="py-4 px-6">Action</th>
+                        <th class="py-4 px-6">Adresse IP</th>
+                        <th class="py-4 px-6">Détails</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {% for log in logs %}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition">
+                        <td class="py-4 px-6 whitespace-nowrap text-slate-500">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                        <td class="py-4 px-6 font-sans font-bold text-slate-800 dark:text-slate-200">
+                            {% if log.user %}{{ log.user.username }}{% else %}<span class="text-slate-500 italic">Anonyme</span>{% endif %}
+                        </td>
+                        <td class="py-4 px-6 font-sans font-semibold text-purple-600 dark:text-purple-400">{{ log.action }}</td>
+                        <td class="py-4 px-6 text-slate-500 font-mono">{{ log.ip_address|default:"127.0.0.1" }}</td>
+                        <td class="py-4 px-6 font-sans font-light max-w-md truncate text-slate-500" title="{{ log.details }}">{{ log.details|truncatechars:80 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="py-12 text-center text-slate-400">Aucun log d'audit.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+            <div class="text-xs text-slate-500">Page {{ logs.number }} / {{ logs.paginator.num_pages }}</div>
+            <div class="flex gap-2">
+                {% if logs.has_previous %}
+                    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 border rounded-lg text-xs hover:bg-slate-100 transition">« Premier</a>
+                    <a href="?page={{ logs.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 border rounded-lg text-xs hover:bg-slate-100 transition">‹ Précédent</a>
+                {% endif %}
+                {% if logs.has_next %}
+                    <a href="?page={{ logs.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 border rounded-lg text-xs hover:bg-slate-100 transition">Suivant ›</a>
+                    <a href="?page={{ logs.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 border rounded-lg text-xs hover:bg-slate-100 transition">Dernier »</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

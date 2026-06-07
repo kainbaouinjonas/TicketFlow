@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique des commandes - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1" x-text="t('order_history_title')">Historique des commandes</h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-light" x-text="t('order_history_desc')">Retrouvez toutes vos réservations et leurs détails.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition flex items-center gap-2 shrink-0" x-text="t('my_space')">
+            ← Mon Espace
+        </a>
+    </div>
+
+    {% if reservations %}
+        <div class="space-y-4">
+            {% for res in reservations %}
+                <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-sm overflow-hidden hover:border-brand-500/30 transition-all"
+                     x-data="{ open: false }">
+
+                    <!-- Header Row -->
+                    <button @click="open = !open" class="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-slate-100 dark:bg-slate-800 w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                {% if res.status == 'CONFIRMED' %}🎟️{% elif res.status == 'PENDING' %}⏳{% else %}❌{% endif %}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <span class="font-bold text-base font-outfit"><span x-text="t('order_prefix')">Commande</span> #{{ res.id }}</span>
+                                    {% if res.status == 'CONFIRMED' %}
+                                        <span class="bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg" x-text="t('confirmed')">✓ Confirmée</span>
+                                    {% elif res.status == 'PENDING' %}
+                                        <span class="bg-amber-500/10 text-amber-500 border border-amber-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg" x-text="t('pending_status')">⏳ En attente</span>
+                                    {% else %}
+                                        <span class="bg-slate-500/10 text-slate-500 border border-slate-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg" x-text="t('cancelled_status')">Annulée</span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-light">{{ res.created_at|date:"d F Y à H:i" }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 shrink-0">
+                            <div class="text-right">
+                                <span class="block text-xs text-slate-400">Total</span>
+                                <span class="text-2xl font-black font-outfit text-brand-600 dark:text-brand-400" x-text="formatPrice({{ res.total_price }})">{{ res.total_price }} €</span>
+                            </div>
+                            <svg class="w-5 h-5 text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <!-- Expanded Details -->
+                    <div x-show="open" x-cloak x-collapse class="border-t border-slate-100 dark:border-slate-800">
+                        <div class="p-6 space-y-4">
+                            {% for seat in res.seats.all %}
+                                <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+                                    <div>
+                                        <span class="block font-bold text-sm font-outfit">{{ seat.event.title }}</span>
+                                        <span class="text-xs text-slate-500">
+                                            <span x-text="t('row_prefix')">Rangée</span> {{ seat.row }} • <span x-text="t('seat_prefix')">Siège N°</span>{{ seat.number }} •
+                                            <span class="font-semibold
+                                                {% if seat.category == 'VIP' %}text-purple-500
+                                                {% elif seat.category == 'GOLD' %}text-amber-500
+                                                {% else %}text-slate-500{% endif %}">
+                                                {{ seat.get_category_display }}
+                                            </span>
+                                        </span>
+                                        <span class="text-xs text-slate-400 block mt-0.5">📅 {{ seat.event.start_time|date:"d M Y à H:i" }} • 📍 {{ seat.event.location }}</span>
+                                    </div>
+                                    <span class="font-extrabold text-brand-600 dark:text-brand-400 text-sm shrink-0 ml-4" x-text="formatPrice({{ seat.price }})">{{ seat.price }} €</span>
+                                </div>
+                            {% empty %}
+                                <p class="text-xs text-slate-400 text-center py-4" x-text="t('no_seats')">Aucun siège associé.</p>
+                            {% endfor %}
+
+                            <!-- Actions -->
+                            <div class="flex flex-wrap gap-3 pt-2">
+                                {% if res.status == 'CONFIRMED' %}
+                                    <a href="{% url 'my_tickets' %}" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition" x-text="t('view_tickets')">
+                                        🎟️ Voir mes billets
+                                    </a>
+                                {% elif res.status == 'PENDING' %}
+                                    {% if not res.is_expired %}
+                                        <a href="{% url 'checkout' res.id %}" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition" x-text="t('finalize_payment_btn')">
+                                            💳 Finaliser le paiement
+                                        </a>
+                                    {% else %}
+                                        <span class="px-5 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-500 text-xs font-bold rounded-xl" x-text="t('expired')">
+                                            ⏰ Expirée
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+            <svg class="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <h3 class="text-xl font-bold font-outfit mb-2" x-text="t('no_orders')">Aucune commande</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto font-light mb-6" x-text="t('no_orders_desc')">
+                Vous n'avez pas encore effectué de réservation. Explorez nos événements pour commencer.
+            </p>
+            <a href="{% url 'home' %}" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/20" x-text="t('discover_events')">
+                Découvrir les événements
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

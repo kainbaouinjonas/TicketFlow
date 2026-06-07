@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+     x-data="{ editMode: false }">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-10">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1" x-text="t('my_profile')">Mon Profil</h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-light" x-text="t('profile_subtitle')">Gérez vos informations personnelles et vos préférences.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition flex items-center gap-2" x-text="t('my_space')">
+            ← Mon Espace
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Avatar & Role -->
+        <div class="space-y-6">
+            <!-- Avatar Card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm text-center">
+                <div class="relative inline-block mb-5">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-24 h-24 rounded-2xl object-cover shadow-lg">
+                    {% else %}
+                        <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                            {{ user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <span class="absolute -bottom-2 -right-2 bg-emerald-500 text-white text-[9px] font-bold uppercase px-2 py-1 rounded-lg" x-text="t('active')">Actif</span>
+                </div>
+
+                <h2 class="text-xl font-bold font-outfit mb-1">{{ user.get_full_name|default:user.username }}</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-light">{{ user.email }}</p>
+
+                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold
+                        {% if user.role == 'ADMIN' %}bg-amber-500/10 text-amber-500 border border-amber-500/30
+                        {% elif user.role == 'CONTROLLER' %}bg-emerald-500/10 text-emerald-500 border border-emerald-500/30
+                        {% elif user.role == 'ORGANIZER' %}bg-blue-500/10 text-blue-500 border border-blue-500/30
+                        {% else %}bg-brand-500/10 text-brand-500 border border-brand-500/30{% endif %}">
+                        {% if user.role == 'ADMIN' %}<span x-text="t('administrator')">Administrateur</span>
+                        {% elif user.role == 'CONTROLLER' %}<span x-text="t('controller_role')">Contrôleur</span>
+                        {% elif user.role == 'ORGANIZER' %}<span x-text="t('organizer_role')">Organisateur</span>
+                        {% else %}<span x-text="t('member')">Membre</span>{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Account Stats -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold font-outfit text-slate-600 dark:text-slate-300 uppercase tracking-wider" x-text="t('account_stats')">Statistiques du compte</h3>
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500" x-text="t('member_since')">Membre depuis</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ user.date_joined|date:"d M Y" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500" x-text="t('last_login')">Dernière connexion</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ user.last_login|date:"d M Y H:i"|default:"N/A" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500" x-text="t('two_factor_auth')">Authentification 2FA</span>
+                        {% if user.two_factor_enabled %}
+                            <span class="text-emerald-500 font-bold" x-text="'✓ ' + t('enabled')">✓ Activée</span>
+                        {% else %}
+                            <span class="text-slate-400 font-bold" x-text="t('disabled')">Désactivée</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Profile Details Form -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Profile Info Card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold font-outfit" x-text="t('personal_info')">Informations personnelles</h3>
+                    <button @click="editMode = !editMode"
+                            class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition flex items-center gap-1.5"
+                            :class="editMode ? 'border-rose-500/40 text-rose-500' : ''">
+                        <span x-text="editMode ? t('cancel') : t('edit')"></span>
+                    </button>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-5">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2" x-text="t('first_name')">Prénom</label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}"
+                                   :disabled="!editMode"
+                                   class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 transition">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2" x-text="t('last_name')">Nom de famille</label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}"
+                                   :disabled="!editMode"
+                                   class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2" x-text="t('email_address')">Adresse e-mail</label>
+                        <input type="email" name="email" value="{{ user.email }}"
+                               :disabled="!editMode"
+                               class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2" x-text="t('phone_number')">Numéro de téléphone</label>
+                        <div class="flex gap-2">
+                            <span class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-3.5 rounded-xl text-sm font-bold text-slate-500">+</span>
+                            <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}"
+                                   :disabled="!editMode"
+                                   placeholder="07 00 00 00 00"
+                                   class="flex-1 px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 transition">
+                        </div>
+                    </div>
+
+                    <div x-show="editMode" x-cloak class="pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <button type="submit"
+                                class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-brand-500/20">
+                            <span x-text="t('save_changes')">Enregistrer les modifications</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm">
+                <h3 class="text-lg font-bold font-outfit mb-6" x-text="t('account_security')">Sécurité du compte</h3>
+                <div class="space-y-4">
+                    <a href="{% url 'password_reset' %}"
+                       class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-brand-500/40 transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-brand-500/10 text-brand-500 w-10 h-10 rounded-xl flex items-center justify-center">🔑</div>
+                            <div>
+                                <span class="block text-sm font-bold" x-text="t('change_password')">Changer le mot de passe</span>
+                                <span class="text-xs text-slate-400 font-light" x-text="t('strengthen_security')">Renforcez la sécurité de votre compte</span>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-brand-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-amber-500/10 text-amber-500 w-10 h-10 rounded-xl flex items-center justify-center">📱</div>
+                            <div>
+                                <span class="block text-sm font-bold" x-text="t('two_factor_auth')">Authentification à 2 facteurs</span>
+                                <span class="text-xs text-slate-400 font-light">
+                                    {% if user.two_factor_enabled %}<span x-text="t('two_fa_enabled')">Activée — votre compte est protégé</span>{% else %}<span x-text="t('two_fa_disabled')">Non configurée — recommandée</span>{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-3 py-1 rounded-lg
+                            {% if user.two_factor_enabled %}bg-emerald-500/10 text-emerald-500{% else %}bg-amber-500/10 text-amber-500{% endif %}">
+                            {% if user.two_factor_enabled %}<span x-text="t('enabled')">Activée</span>{% else %}<span x-text="t('disabled')">Désactivée</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

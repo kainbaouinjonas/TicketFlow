@@ -1,0 +1,29 @@
+# Exclude python virtual environment
+venv/
+.venv/
+.venv-1/
+.venv311/
+
+# Exclude git
+.git/
+.github/
+
+# Exclude IDE folders
+.idea/
+.vscode/
+
+# Exclude Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude local database and media
+db.sqlite3
+media/
+static/
+staticfiles/
+
+# Exclude logs
+logs/
+*.log

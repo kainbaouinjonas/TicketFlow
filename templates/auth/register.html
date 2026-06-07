@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Inscription - TicketFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-xl">
+        <div class="text-center mb-8">
+            <div class="bg-gradient-to-br from-brand-500 to-indigo-500 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+            <h1 class="text-2xl font-bold font-outfit" x-text="t('register') || 'Créer un compte'">Créer un compte</h1>
+            <p class="text-xs text-slate-400 mt-1 font-light" x-text="t('join_ticketflow') || 'Rejoignez TicketFlow et réservez vos places en temps réel.'">Rejoignez TicketFlow et réservez vos places en temps réel.</p>
+        </div>
+
+        <!-- Language Selector on Register Page -->
+        <div class="flex justify-center mb-6">
+            <select x-model="lang" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold px-3 py-2 rounded-xl focus:outline-none text-slate-600 dark:text-slate-400">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="pt">🇧🇷 Português</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="zh">🇨🇳 中文</option>
+            </select>
+        </div>
+
+        <form method="POST" action="{% url 'register' %}"
+              x-data="{
+                role: 'USER',
+                phoneDigits: '',
+                countryDialCode: '+225',
+                countries: [
+                    { code: '+225', flag: '🇨🇮', name: 'Côte d\'Ivoire' },
+                    { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
+                    { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
+                    { code: '+229', flag: '🇧🇯', name: 'Bénin' },
+                    { code: '+223', flag: '🇲🇱', name: 'Mali' },
+                    { code: '+242', flag: '🇨🇬', name: 'Congo' },
+                    { code: '+33',  flag: '🇫🇷', name: 'France' },
+                    { code: '+32',  flag: '🇧🇪', name: 'Belgique' },
+                    { code: '+41',  flag: '🇨🇭', name: 'Suisse' },
+                    { code: '+1',   flag: '🇺🇸', name: 'États-Unis' },
+                    { code: '+44',  flag: '🇬🇧', name: 'Royaume-Uni' },
+                    { code: '+49',  flag: '🇩🇪', name: 'Allemagne' },
+                ],
+                get fullPhone() { return this.countryDialCode + this.phoneDigits.replace(/\D/g, ''); }
+              }">
+            {% csrf_token %}
+
+            <div class="space-y-4">
+                <!-- Username -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('username')">Nom d'utilisateur</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="username" 
+                           value="{{ form.username.value|default:'' }}"
+                           placeholder="nom_utilisateur"
+                           class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition text-slate-900 dark:text-slate-100">
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('email')">Email</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="email" name="email"
+                           value="{{ form.email.value|default:'' }}"
+                           placeholder="vous@exemple.com"
+                           class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition text-slate-900 dark:text-slate-100">
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Phone Number with Country Code -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('phone')">Téléphone</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <!-- Country Code Selector -->
+                        <div class="relative">
+                            <select x-model="countryDialCode"
+                                    class="appearance-none pl-3 pr-7 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 transition text-slate-900 dark:text-slate-100 min-w-[90px]">
+                                <template x-for="c in countries" :key="c.code">
+                                    <option :value="c.code" x-text="c.flag + ' ' + c.code"></option>
+                                </template>
+                            </select>
+                            <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <!-- Phone digits only -->
+                        <input type="tel" x-model="phoneDigits"
+                               inputmode="numeric"
+                               @keypress="if(!/[0-9]/.test($event.key)) $event.preventDefault()"
+                               placeholder="0707070707"
+                               class="flex-1 px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition text-slate-900 dark:text-slate-100">
+                    </div>
+                    <!-- Hidden field that combines both -->
+                    <input type="hidden" name="phone_number" :value="fullPhone">
+                    <p class="text-[10px] text-slate-400 mt-1.5 font-light">
+                        <span x-text="t('full_number')">Numéro complet :</span> <span class="font-mono text-brand-500" x-text="fullPhone || (countryDialCode + ' xxxxxxxx')"></span>
+                    </p>
+                    {% if form.phone_number.errors %}
+                        {% for error in form.phone_number.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Role Selector -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('i_am')">Je suis</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label :class="role === 'USER' ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400' : 'border-slate-200 dark:border-slate-800'"
+                               class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all">
+                            <input type="radio" name="role" value="USER" x-model="role" class="sr-only">
+                            <span class="text-xl">🎫</span>
+                            <div>
+                                <span class="block text-sm font-bold" x-text="t('buyer')">Acheteur</span>
+                                <span class="text-[10px] text-slate-400 font-light" x-text="t('buyer_desc')">Réserver des tickets</span>
+                            </div>
+                        </label>
+                        <label :class="role === 'ORGANIZER' ? 'border-amber-500 bg-amber-500/5 text-amber-600 dark:text-amber-400' : 'border-slate-200 dark:border-slate-800'"
+                               class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all">
+                            <input type="radio" name="role" value="ORGANIZER" x-model="role" class="sr-only">
+                            <span class="text-xl">🎭</span>
+                            <div>
+                                <span class="block text-sm font-bold" x-text="t('organizer')">Organisateur</span>
+                                <span class="text-[10px] text-slate-400 font-light" x-text="t('organizer_desc')">Créer des événements</span>
+                            </div>
+                        </label>
+                    </div>
+                    <p x-show="role === 'ORGANIZER'" class="text-[10px] text-amber-600 dark:text-amber-400 mt-2 font-medium flex items-center gap-1">
+                        ⚠️ <span x-text="t('organizer_pending_notice')">Le compte organisateur sera activé après validation par un administrateur.</span>
+                    </p>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('password')">Mot de passe</span> <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        {% for error in form.password1.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                        <span x-text="t('confirm_password')">Confirmer le mot de passe</span> <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        {% for error in form.password2.errors %}
+                            <span class="text-xs text-rose-500 block mt-1">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-brand-500/20 mt-6 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span x-text="t('register') || 'S\'inscrire'">S'inscrire</span>
+            </button>
+        </form>
+
+        <div class="text-center text-xs text-slate-500 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <span x-text="t('already_registered')">Déjà inscrit ?</span> 
+            <a href="{% url 'login' %}" class="font-bold text-brand-600 hover:text-brand-700 ml-1" x-text="t('login') || 'Se connecter'">Se connecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

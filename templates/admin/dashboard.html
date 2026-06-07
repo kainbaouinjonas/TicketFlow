@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Administration - Tableau de Bord - BilletFacile{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Admin Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1 bg-gradient-to-r from-amber-500 to-indigo-500 bg-clip-text text-transparent">
+                {% if user.role == 'ORGANIZER' %}Portail Organisateur{% else %}Portail Administration{% endif %}
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light">
+                {% if user.role == 'ORGANIZER' %}Gérez vos événements, suivez vos statistiques de ventes et éditez vos billets.{% else %}Supervisez l'intégralité du système, gérez les événements et consultez les indicateurs clés de performance.{% endif %}
+            </p>
+        </div>
+        <div class="flex gap-3">
+            {% if user.is_superuser or user.role == 'ADMIN' %}
+            <a href="{% url 'list_controllers' %}" class="px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-900 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                🔍 Gérer les contrôleurs
+            </a>
+            <a href="{% url 'admin_logs' %}" class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 text-slate-400">
+                📄 Journaux d'audit
+            </a>
+            {% endif %}
+            <a href="{% url 'event_create' %}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/20 flex items-center gap-1.5">
+                ➕ Créer un événement
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Analytics Dashboard Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <!-- Revenue Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-start justify-between">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Chiffre d'Affaires</p>
+                <span class="text-3xl font-black font-outfit text-slate-900 dark:text-slate-150" x-text="formatPrice({{ total_revenue }})">{{ total_revenue }} €</span>
+            </div>
+            <span class="text-lg bg-emerald-500/10 p-2 rounded-xl text-emerald-500">💰</span>
+        </div>
+
+        <!-- Sales Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-start justify-between">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Billets Vendus</p>
+                <span class="text-3xl font-black font-outfit text-slate-900 dark:text-slate-150">{{ total_sales }}</span>
+            </div>
+            <span class="text-lg bg-brand-500/10 p-2 rounded-xl text-brand-500">🎟️</span>
+        </div>
+
+        <!-- Users Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-start justify-between">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Utilisateurs</p>
+                <span class="text-3xl font-black font-outfit text-slate-900 dark:text-slate-150">{{ total_users }}</span>
+            </div>
+            <span class="text-lg bg-blue-500/10 p-2 rounded-xl text-blue-500">👥</span>
+        </div>
+
+        <!-- Active locks Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-start justify-between">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Sièges Verrouillés</p>
+                <span class="text-3xl font-black font-outfit text-slate-900 dark:text-slate-150">{{ active_locks }}</span>
+            </div>
+            <span class="text-lg bg-amber-500/10 p-2 rounded-xl text-amber-500">🔒</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
+        <!-- Left: Dynamic Chart.js Revenue Graph -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold font-outfit">Tendances des Ventes</h3>
+                <span class="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg font-semibold">6 derniers mois</span>
+            </div>
+            <div class="w-full aspect-[2/1] relative">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right: System Activity Feed Log list -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm">
+            <h3 class="text-lg font-bold font-outfit mb-6">Activités Récentes</h3>
+            
+            <div class="space-y-4 max-h-[250px] overflow-y-auto">
+                {% for res in latest_reservations %}
+                    <div class="flex items-start gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 last:border-none last:pb-0 text-xs">
+                        <span class="text-lg">🛒</span>
+                        <div>
+                            <span class="block font-bold text-slate-800 dark:text-slate-250">Commande #{{ res.id }}</span>
+                            <span class="block text-[10px] text-slate-400 font-light">Status: <strong class="text-brand-500">{{ res.status }}</strong> • <span x-text="formatPrice({{ res.total_price }})">{{ res.total_price }} €</span></span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-xs text-slate-400 text-center py-6">Aucune activité enregistrée.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if pending_organizers %}
+    <!-- Pending Organizers Section -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm mb-12">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-amber-500/10 to-indigo-500/10">
+            <div>
+                <h3 class="text-lg font-bold font-outfit text-amber-600 dark:text-amber-400">Organisateurs en attente de validation</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Approuvez les nouveaux comptes organisateurs pour les autoriser à se connecter et créer des événements.</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">{{ pending_organizers|length }} En attente</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950">
+                        <th class="py-4 px-8">Nom d'utilisateur</th>
+                        <th class="py-4 px-6">Email</th>
+                        <th class="py-4 px-6">Téléphone</th>
+                        <th class="py-4 px-6">Date d'inscription</th>
+                        <th class="py-4 px-8 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                    {% for org in pending_organizers %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors">
+                            <td class="py-4 px-8 font-bold text-slate-900 dark:text-slate-100">{{ org.username }}</td>
+                            <td class="py-4 px-6 text-slate-500">{{ org.email }}</td>
+                            <td class="py-4 px-6 text-slate-500 font-mono">{{ org.phone_number|default:"-" }}</td>
+                            <td class="py-4 px-6 font-mono text-xs text-slate-500">{{ org.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="py-4 px-8 text-right space-x-3">
+                                <a href="{% url 'approve_organizer' org.id %}" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm">
+                                    Approuver et Activer
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Events CRUD list -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <h3 class="text-lg font-bold font-outfit">Catalogue d'Événements</h3>
+            <span class="text-xs font-semibold text-slate-400">{{ events|length }} Événements créés</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-950">
+                        <th class="py-4 px-8">Titre</th>
+                        <th class="py-4 px-6">Lieu</th>
+                        <th class="py-4 px-6">Capacité / Remplissage</th>
+                        <th class="py-4 px-6">Date de Début</th>
+                        <th class="py-4 px-8 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                    {% for item in events %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors">
+                            <td class="py-4 px-8">
+                                <span class="block font-bold text-slate-900 dark:text-slate-100">{{ item.event.title }}</span>
+                                <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">{{ item.event.category.name }}</span>
+                            </td>
+                            <td class="py-4 px-6 text-slate-500 dark:text-slate-450">{{ item.event.location }}</td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-24 h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shrink-0">
+                                        <div class="bg-brand-600 h-full rounded-full" style="width: {{ item.fill_rate }}%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-600 dark:text-slate-400">{{ item.fill_rate }}% ({{ item.sold_seats }}/{{ item.total_seats }})</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 font-mono text-xs text-slate-500">{{ item.event.start_time|date:"d/m/Y H:i" }}</td>
+                            <td class="py-4 px-8 text-right space-x-3 shrink-0 whitespace-nowrap">
+                                <a href="{% url 'event_update' item.event.id %}" class="text-xs font-bold text-brand-500 hover:underline">Modifier</a>
+                                <a href="{% url 'event_delete' item.event.id %}" class="text-xs font-bold text-rose-500 hover:underline">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-slate-400 font-light">Aucun événement n'a encore été créé. Cliquez sur "Créer un événement" pour commencer.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    // Fetch real chart data from backend
+    fetch('{% url "admin_chart_data" %}')
+        .then(r => r.json())
+        .then(data => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels.length ? data.labels : ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                    datasets: [{
+                        label: 'Chiffre d\'affaires',
+                        data: data.revenue.length ? data.revenue : [0, 0, 0, 0, 0, 0],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15,23,42,0.9)',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(139,92,246,0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: ctx => { const sym = document.querySelector('[x-data]')?.__x?.['$data']?.getCurrencySymbol?.() || '€'; return ' ' + ctx.parsed.y.toFixed(2) + ' ' + sym; }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 11, family: 'Inter' } }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 11, family: 'Inter' },
+                                callback: v => { const sym = document.querySelector('[x-data]')?.__x?.['$data']?.getCurrencySymbol?.() || '€'; return v + ' ' + sym; }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(() => {
+            // Fallback: display placeholder if no data
+            ctx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-slate-400 text-xs">Aucune donnée disponible</div>';
+        });
+});
+</script>
+{% endblock %}
