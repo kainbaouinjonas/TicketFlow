@@ -55,3 +55,6 @@ celerybeat.pid
 
 # Static files (collected)
 staticfiles/
+
+# GitHub workflows (token scope limitation)
+.github/workflows/
