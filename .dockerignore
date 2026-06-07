@@ -21,7 +21,6 @@ venv/
 # Exclude local database and media
 db.sqlite3
 media/
-static/
 staticfiles/
 
 # Exclude logs
