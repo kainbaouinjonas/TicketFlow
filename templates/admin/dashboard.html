@@ -3,7 +3,7 @@
 {% block title %}Administration - Tableau de Bord - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
     <!-- Admin Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
         <div>
@@ -14,20 +14,19 @@
                 {% if user.role == 'ORGANIZER' %}Gérez vos événements, suivez vos statistiques de ventes et éditez vos billets.{% else %}Supervisez l'intégralité du système, gérez les événements et consultez les indicateurs clés de performance.{% endif %}
             </p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center flex-wrap gap-3 shrink-0">
             {% if user.is_superuser or user.role == 'ADMIN' %}
-            <a href="{% url 'list_controllers' %}" class="px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-900 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <a href="{% url 'list_controllers' %}" class="px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-900 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                 🔍 Gérer les contrôleurs
             </a>
-            <a href="{% url 'admin_logs' %}" class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 text-slate-400">
+            <a href="{% url 'admin_logs' %}" class="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center justify-center gap-1.5 text-slate-400">
                 📄 Journaux d'audit
             </a>
             {% endif %}
-            <a href="{% url 'event_create' %}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/20 flex items-center gap-1.5">
+            <a href="{% url 'event_create' %}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5">
                 ➕ Créer un événement
             </a>
         </div>
-
     </div>
 
     <!-- Analytics Dashboard Cards Grid -->
@@ -69,7 +68,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12 mb-12">
         <!-- Left: Dynamic Chart.js Revenue Graph -->
         <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm">
             <div class="flex items-center justify-between mb-6">

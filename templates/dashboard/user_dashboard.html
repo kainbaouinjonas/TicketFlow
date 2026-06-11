@@ -3,7 +3,7 @@
 {% block title %}Mon Espace Personnel - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12"
      x-data="{
         showTicketModal: false,
         activeTicket: null,
@@ -68,7 +68,7 @@
     </div>
 
     <!-- Main sections grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
         <!-- Left 2 Columns: Purchased Tickets Collection -->
         <div class="lg:col-span-2 space-y-8">
             <h2 class="text-xl font-bold font-outfit" x-text="t('my_active_tickets')">Mes Billets Actifs</h2>

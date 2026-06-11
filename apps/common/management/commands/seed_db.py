@@ -66,36 +66,37 @@ class Command(BaseCommand):
             cat_conference, _ = Category.objects.get_or_create(name="Conférence", defaults={"slug": "conference"})
             cat_mariage, _ = Category.objects.get_or_create(name="Mariage & Cérémonie", defaults={"slug": "mariage-ceremonie"})
             
-            # Create Events
-            self.stdout.write("Création des événements...")
-            
+            # Suppression des anciens événements
+            self.stdout.write("Suppression des anciens événements...")
+            Event.objects.all().delete()
+
             events_data = [
                 {
-                    "title": "Grand Concert Symphonique",
+                    "title": "Grand Concert de Musique de Bamenda",
                     "category": cat_concert,
-                    "location": "Philharmonie de Paris, France",
-                    "description": "Une magnifique soirée consacrée aux plus grands compositeurs classiques.",
+                    "location": "Palais des Congrès de Bamenda, Cameroun",
+                    "description": "Une magnifique soirée de célébration musicale live avec des artistes camerounais.",
                     "offset_days": 10
                 },
                 {
-                    "title": "Finale de la Coupe de Football",
+                    "title": "Tournoi de Football Inter-Quartiers",
                     "category": cat_sport,
-                    "location": "Stade de France, Saint-Denis",
-                    "description": "Le match le plus attendu de l'année.",
+                    "location": "Stade Municipal de Bamenda, Cameroun",
+                    "description": "Le tournoi de football local le plus attendu de l'année opposant les meilleures équipes.",
                     "offset_days": 15
                 },
                 {
-                    "title": "Conférence Tech de l'Année",
+                    "title": "Forum d'Innovation Tech Bamenda",
                     "category": cat_conference,
-                    "location": "Palais des Congrès, Paris",
-                    "description": "Découvrez les dernières innovations technologiques et IA.",
+                    "location": "Bamenda Congress Hall, Cameroun",
+                    "description": "Découvrez les dernières innovations technologiques, opportunités d'entrepreneuriat et IA.",
                     "offset_days": 8
                 },
                 {
-                    "title": "Célébration Mariage Royal",
+                    "title": "Festival Culturel de Bamenda",
                     "category": cat_mariage,
-                    "location": "Château de Versailles, France",
-                    "description": "Une cérémonie et réception de prestige dans les jardins royaux.",
+                    "location": "Bamenda Cultural Plaza, Cameroun",
+                    "description": "Célébration des danses et des traditions culturelles locales de la région du Nord-Ouest.",
                     "offset_days": 20
                 }
             ]

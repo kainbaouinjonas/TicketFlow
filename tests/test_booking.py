@@ -209,3 +209,119 @@ def test_payment_and_hmac_ticket_generation(setup_db, db):
     assert ticket.is_validated is False
     assert ticket.qr_code_hash is not None
     assert len(ticket.qr_code_hash) > 10
+
+
+def test_celery_generate_tickets_task(setup_db, db):
+    """
+    Test generate_tickets_async Celery task directly.
+    """
+    cust = setup_db["cust1"]
+    seat = setup_db["seat2"]
+    res = Reservation.objects.create(
+        user=cust,
+        total_price=20.00,
+        status=Reservation.STATUS_CONFIRMED,
+        expires_at=timezone.now() + timedelta(minutes=15)
+    )
+    res.seats.add(seat)
+    
+    # Run task directly (mocking Celery worker execution)
+    from tickets.tasks import generate_tickets_async
+    result = generate_tickets_async(res.id)
+    assert "billets créés" in result or "billets" in result
+    
+    # Check ticket is created
+    assert Ticket.objects.filter(reservation=res, seat=seat).exists()
+
+
+def test_celery_send_payment_confirmation_email_task(setup_db, db):
+    """
+    Test send_payment_confirmation_email Celery task directly.
+    """
+    from django.core import mail
+    from payments.tasks import send_payment_confirmation_email
+    cust = setup_db["cust1"]
+    res = Reservation.objects.create(
+        user=cust,
+        total_price=20.00,
+        status=Reservation.STATUS_CONFIRMED,
+        expires_at=timezone.now() + timedelta(minutes=15)
+    )
+    payment = Payment.objects.create(
+        reservation=res,
+        amount=20.00,
+        method=Payment.METHOD_CARD,
+        status=Payment.STATUS_SUCCESS,
+        transaction_id="tx_test_email_123"
+    )
+    
+    # Ensure mail outbox is empty
+    mail.outbox = []
+    
+    result = send_payment_confirmation_email(payment.id)
+    assert "Email envoyé" in result
+    
+    # Assert mail is sent
+    assert len(mail.outbox) == 1
+    assert "Confirmation de paiement" in mail.outbox[0].subject
+    assert cust.email in mail.outbox[0].to
+
+
+def test_celery_cleanup_failed_payments_task(setup_db, db):
+    """
+    Test cleanup_failed_payments task.
+    """
+    from django.utils import timezone
+    from datetime import timedelta
+    from payments.tasks import cleanup_failed_payments
+    cust = setup_db["cust1"]
+    res = Reservation.objects.create(
+        user=cust,
+        total_price=20.00,
+        status=Reservation.STATUS_PENDING,
+        expires_at=timezone.now() + timedelta(minutes=15)
+    )
+    # Create a stale payment
+    payment = Payment.objects.create(
+        reservation=res,
+        amount=20.00,
+        method=Payment.METHOD_CARD,
+        status=Payment.STATUS_PENDING,
+        transaction_id="tx_stale_123"
+    )
+    # Manually update created_at to be older than 1 hour (since auto_now_add makes it read-only on save, we do .update())
+    Payment.objects.filter(id=payment.id).update(created_at=timezone.now() - timedelta(hours=2))
+    
+    # Run cleanup
+    result = cleanup_failed_payments()
+    assert "nettoyés" in result
+    
+    payment.refresh_from_db()
+    assert payment.status == Payment.STATUS_FAILED
+
+
+def test_celery_cleanup_orphaned_tickets_task(setup_db, db):
+    """
+    Test cleanup_orphaned_tickets task.
+    """
+    from tickets.tasks import cleanup_orphaned_tickets
+    cust = setup_db["cust1"]
+    seat = setup_db["seat2"]
+    res = Reservation.objects.create(
+        user=cust,
+        total_price=20.00,
+        status=Reservation.STATUS_CANCELLED,
+        expires_at=timezone.now() - timedelta(minutes=15)
+    )
+    ticket = Ticket.objects.create(
+        reservation=res,
+        seat=seat,
+        qr_code_hash="fake_signature_hash"
+    )
+    
+    # Run cleanup
+    result = cleanup_orphaned_tickets()
+    assert "orphelins" in result
+    
+    assert not Ticket.objects.filter(id=ticket.id).exists()
+

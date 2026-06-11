@@ -30,7 +30,7 @@
             <!-- Left Side: List of seats in the cart -->
             <div class="md:col-span-2 space-y-4">
                 {% for item in items %}
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex items-center justify-between gap-6">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <span class="block text-xs uppercase font-bold text-slate-400 mb-1">{{ item.seat.event.category.name }}</span>
                             <h3 class="font-bold text-lg font-outfit mb-1">{{ item.seat.event.title }}</h3>
@@ -40,12 +40,12 @@
                                 <span class="font-semibold text-brand-500"><span x-text="t('seat_label')">Siège</span>: <span x-text="t('row_prefix')">Rangée</span> {{ item.seat.row }}, N° {{ item.seat.number }} ({{ item.seat.category }})</span>
                             </div>
                         </div>
-                        <div class="text-right shrink-0">
+                        <div class="text-left sm:text-right shrink-0">
                             <span class="block font-black text-lg font-outfit text-brand-600 dark:text-brand-400" x-text="formatPrice({{ item.seat.price }})">{{ item.seat.price }} €</span>
                             <!-- Form to remove seat from cart -->
                             <form method="POST" action="{% url 'remove_from_cart' item.seat.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="text-xs text-rose-500 hover:underline mt-2 font-bold flex items-center gap-1 ml-auto" x-text="t('remove')">
+                                <button type="submit" class="text-xs text-rose-500 hover:underline mt-2 font-bold flex items-center gap-1 sm:ml-auto ml-0" x-text="t('remove')">
                                     Retirer
                                 </button>
                             </form>

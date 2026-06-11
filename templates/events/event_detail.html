@@ -3,7 +3,7 @@
 {% block title %}{{ event.title }} - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
     <!-- Breadcrumb -->
     <nav class="flex text-sm font-semibold mb-8 text-slate-500 dark:text-slate-400 gap-2">
         <a href="{% url 'home' %}" class="hover:text-brand-500 transition-colors" x-text="t('home')">Accueil</a>
@@ -12,7 +12,7 @@
     </nav>
 
     <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
         <!-- Left Side: Banner, Description -->
         <div class="lg:col-span-2 space-y-8">
             <!-- Banner Card -->

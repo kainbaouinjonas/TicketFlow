@@ -179,8 +179,6 @@ def process_payment(request):
                     seat.status = Seat.STATUS_RESERVED
                     seat.save()
                 
-                generate_tickets_for_reservation(reservation)
-                
                 AuditLog.objects.create(
                     user=request.user,
                     action=f"Paiement par carte validé",
@@ -225,8 +223,6 @@ def process_payment(request):
                 for seat in reservation.seats.all():
                     seat.status = Seat.STATUS_RESERVED
                     seat.save()
-                
-                generate_tickets_for_reservation(reservation)
                 
                 AuditLog.objects.create(
                     user=request.user,
@@ -306,8 +302,6 @@ def verify_otp(request):
             for seat in reservation.seats.all():
                 seat.status = Seat.STATUS_RESERVED
                 seat.save()
-            
-            generate_tickets_for_reservation(reservation)
             
             AuditLog.objects.create(
                 user=request.user,
