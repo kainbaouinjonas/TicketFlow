@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from django.db.models import Q
+from django.db.models import Q, Min
 from .models import Event, Category, Seat
 
 
@@ -11,7 +11,11 @@ class EventListView(ListView):
     paginate_by = 9
 
     def get_queryset(self):
-        queryset = Event.objects.filter(is_published=True).select_related('category')
+        queryset = (
+            Event.objects.filter(is_published=True)
+            .select_related('category')
+            .annotate(min_seat_price=Min('seats__price'))
+        )
         q = self.request.GET.get('q', '').strip()
         category_slug = self.request.GET.get('category', '').strip()
 

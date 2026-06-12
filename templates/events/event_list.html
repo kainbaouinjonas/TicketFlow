@@ -67,6 +67,10 @@
                     <!-- Details -->
                     <div class="p-6 flex-grow flex flex-col">
                         <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
+                            <svg class="w-4 h-4 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span class="truncate">{{ event.start_time|date:"d M Y - H:i" }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
                             <svg class="w-4 h-4 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             <span class="truncate">{{ event.location }}</span>
                         </div>
@@ -81,7 +85,7 @@
                         <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 mt-auto">
                             <div>
                                 <span class="block text-xs text-slate-400" x-text="t('starting_at') || 'À partir de'">À partir de</span>
-                                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-outfit" x-text="formatPrice({{ event.price }})">{{ event.price }} €</span>
+                                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-outfit" x-text="formatPrice({{ event.min_seat_price|default:event.price|floatformat:2 }})">{{ event.min_seat_price|default:event.price }} €</span>
                             </div>
                             <a href="{% url 'event_detail' event.slug %}" class="bg-slate-900 hover:bg-brand-600 dark:bg-slate-800 dark:hover:bg-brand-600 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all shadow-md" x-text="t('buy_ticket') || 'Réserver des places'">
                                 Réserver des places
