@@ -3,7 +3,7 @@
 {% block title %}{{ event.title }} - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
     <!-- Breadcrumb -->
     <nav class="flex text-sm font-semibold mb-8 text-slate-500 dark:text-slate-400 gap-2">
         <a href="{% url 'home' %}" class="hover:text-brand-500 transition-colors" x-text="t('home')">Accueil</a>
@@ -31,7 +31,7 @@
             </div>
 
             <!-- Description -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-8 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-8 shadow-sm">
                 <h2 class="text-2xl font-bold font-outfit mb-4" x-text="t('about_event')">À propos de cet événement</h2>
                 <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 font-light leading-relaxed">
                     {{ event.description|linebreaks }}
@@ -42,7 +42,7 @@
         <!-- Right Side: Booking details, Pricing tiers -->
         <div class="space-y-8">
             <!-- Details Card -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-8 shadow-md">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-8 shadow-md">
                 <div class="space-y-6 mb-8">
                     <!-- Date -->
                     <div class="flex gap-4">

@@ -1605,6 +1605,14 @@
         tailwind.config = {
             darkMode: 'class',
             theme: {
+                screens: {
+                    'xs': '480px',
+                    'sm': '640px',
+                    'md': '768px',
+                    'lg': '1024px',
+                    'xl': '1280px',
+                    '2xl': '1536px',
+                },
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -1632,6 +1640,15 @@
         [x-cloak] { display: none !important; }
         body { font-family: 'Inter', sans-serif; transition: background-color 0.2s ease; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+        
+        /* Prevent horizontal scroll globally */
+        html, body { overflow-x: hidden; max-width: 100%; }
+        
+        /* Better touch targets on mobile */
+        @media (max-width: 640px) {
+            button, a { -webkit-tap-highlight-color: transparent; }
+            input, select, textarea { font-size: 16px !important; } /* Prevent iOS zoom */
+        }
         
         /* Protection contre le copy-paste de données sensibles */
         .no-copy {
@@ -1895,7 +1912,7 @@
         <div class="absolute -bottom-12 -right-12 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 mb-12">
                 <!-- Col 1: Brand Info -->
                 <div class="space-y-4">
                     <a href="{% url 'home' %}" class="flex items-center gap-2">
