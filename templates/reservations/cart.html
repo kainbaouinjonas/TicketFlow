@@ -3,7 +3,7 @@
 {% block title %}Mon Panier - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12"
      x-data="{ 
         timeLeft: {{ time_left }},
         formatTime() {
@@ -14,7 +14,7 @@
      }"
      x-init="setInterval(() => { if(timeLeft > 0) timeLeft-- }, 1000)">
 
-    <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-8" x-text="t('your_cart')">Votre Panier</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-outfit mb-6 sm:mb-8" x-text="t('your_cart')">Votre Panier</h1>
 
     {% if items %}
         <!-- Expiration Alert banner -->
@@ -26,7 +26,7 @@
             <span class="hidden sm:inline text-xs font-semibold uppercase tracking-wider bg-amber-500 text-slate-900 px-3 py-1 rounded-lg" x-text="t('temporary')">Temporaire</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="cart-grid">
             <!-- Left Side: List of seats in the cart -->
             <div class="md:col-span-2 space-y-4">
                 {% for item in items %}

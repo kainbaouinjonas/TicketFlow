@@ -3,7 +3,7 @@
 {% block title %}Plan de salle interactif - {{ event.title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" 
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8" 
      x-data="{ 
         selectedSeats: [],
         zoom: 1,
@@ -46,9 +46,9 @@
         }
      }">
 
-    <div class="flex flex-col lg:flex-row gap-12">
+    <div class="seat-map-layout flex gap-6 lg:gap-12">
         <!-- Left Column: Interactive Seat Grid Map -->
-        <div class="lg:col-span-2 flex-grow bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden p-8 shadow-2xl relative select-none">
+        <div class="flex-grow bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden p-4 sm:p-8 shadow-2xl relative select-none">
             <!-- Seat Map Header Controls -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-8 relative z-10">
                 <div>
@@ -147,7 +147,7 @@
         </div>
 
         <!-- Right Column: Sidebar Cart Confirmation -->
-        <div class="lg:w-96 shrink-0 space-y-8">
+        <div class="seat-map-sidebar space-y-8">
             <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-lg flex flex-col h-full justify-between">
                 <div>
                     <h3 class="text-lg font-bold font-outfit mb-2" x-text="t('seats_selected')">Vos Places Sélectionnées</h3>

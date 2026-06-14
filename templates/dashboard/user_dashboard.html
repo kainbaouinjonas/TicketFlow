@@ -3,7 +3,7 @@
 {% block title %}Mon Espace Personnel - BilletFacile{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12"
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-10"
      x-data="{
         showTicketModal: false,
         activeTicket: null,
@@ -21,9 +21,9 @@
         }
      }">
 
-    <div class="flex flex-col md:flex-row items-start justify-between gap-6 mb-12">
+    <div class="dashboard-header flex mb-8 sm:mb-12">
         <div>
-            <h1 class="text-3xl font-extrabold tracking-tight font-outfit mb-1"><span x-text="t('welcome')">Bonjour</span>, {{ user.username }} !</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-outfit mb-1"><span x-text="t('welcome')">Bonjour</span>, {{ user.username }} !</h1>
             <p class="text-slate-500 dark:text-slate-400 font-light text-sm" x-text="t('dashboard_subtitle') || 'Gérez vos réservations, téléchargez vos billets et consultez votre historique d\'achats.'">Gérez vos réservations, téléchargez vos billets et consultez votre historique d'achats.</p>
         </div>
         <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-500 uppercase tracking-wider" x-text="t('privilege_buyer')">
@@ -117,7 +117,7 @@
         </div>
 
         <!-- Right Column: Billing & Reservation log history -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-sm h-fit space-y-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-8 shadow-sm h-fit space-y-6">
             <h2 class="text-lg font-bold font-outfit" x-text="t('order_history')">Historique de commandes</h2>
 
             {% if reservations %}
