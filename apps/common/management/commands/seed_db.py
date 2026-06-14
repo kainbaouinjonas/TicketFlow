@@ -75,6 +75,7 @@ class Command(BaseCommand):
                     "title": "Grand Concert de Musique de Bamenda",
                     "category": cat_concert,
                     "location": "Palais des Congrès de Bamenda, Cameroun",
+                                        "banner": "events/banners/concert_bamenda.png",
                     "description": "Une magnifique soirée de célébration musicale live avec des artistes camerounais.",
                     "offset_days": 10
                 },
@@ -82,6 +83,7 @@ class Command(BaseCommand):
                     "title": "Tournoi de Football Inter-Quartiers",
                     "category": cat_sport,
                     "location": "Stade Municipal de Bamenda, Cameroun",
+                                        "banner": "events/banners/football_tournament_bamenda.png",
                     "description": "Le tournoi de football local le plus attendu de l'année opposant les meilleures équipes.",
                     "offset_days": 15
                 },
@@ -89,6 +91,7 @@ class Command(BaseCommand):
                     "title": "Forum d'Innovation Tech Bamenda",
                     "category": cat_conference,
                     "location": "Bamenda Congress Hall, Cameroun",
+                                        "banner": "events/banners/tech_innovation_bamenda.png",
                     "description": "Découvrez les dernières innovations technologiques, opportunités d'entrepreneuriat et IA.",
                     "offset_days": 8
                 },
